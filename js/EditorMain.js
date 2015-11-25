@@ -7,7 +7,9 @@ $(document).ready(function() {
     var imageID = 0;
 
     var colourChanger = null;
-    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/clothes/clothe"+ imageID +".png", patternImage, 1, true);
+    console.log("derp");
+    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/sweater.png", patternImage, 1, "webgl");
+    var mouseHandler = new MouseHandler(productPreview);
 
     window.onload = function()
     {
