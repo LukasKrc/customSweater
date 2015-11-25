@@ -4,9 +4,10 @@ $(document).ready(function() {
     var colourChanged = null;
     var patternImage = new Image();
     patternImage.src = "imgs/patterns/pattern0.png";
-
+	var imageID = 0;
+	
     var colourChanger = null;
-    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/sweater.png", patternImage, 1, true);
+    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/clothes/clothe"+ imageID +".png", patternImage, 1, true);
 
     window.onload = function()
     {
@@ -26,6 +27,14 @@ $(document).ready(function() {
             }
         });
     }
+	
+	$(".clothesButton").click( function(e) {
+        var clothID = $(this).attr("clotheNumber");
+        console.log(clothID);
+	//	productPreview.setDisplacement(clothID);
+	//	productPreview.setImage("imgs/clothes/clothe"+ clothID +".png");
+		
+    });
 
     $(".patternButton").click( function(e) {
         var buttonId = $(this).attr("buttonNumber");
