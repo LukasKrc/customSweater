@@ -28,6 +28,53 @@
                 gl_FragColor = vec4(0, 0, 0, 0);
         }
     </script>
+    <script id="fragmentShaderWebgl" type="x-shader/x-fragment">
+        precision mediump float;
+
+        uniform sampler2D u_interp;
+        uniform sampler2D u_model;
+        uniform sampler2D u_source;
+        uniform sampler2D u_mask;
+        varying vec2 v_texCoord;
+
+        void main()
+        {
+          vec4 uvmap = texture2D(u_interp, v_texCoord);
+          vec2 txy = vec2((uvmap.x * 256. + uvmap.y) / 257., (uvmap.z * 256. + uvmap.w) / 257.);
+          vec3 c = texture2D(u_source, txy).xyz;
+          float sourceOpacity = texture2D(u_source, txy).a;
+          float mask = texture2D(u_mask, v_texCoord).x;
+          vec3 base = texture2D(u_model, v_texCoord).xyz;
+
+          if (mask > 0.5)
+          {
+            vec3 c2;
+            if (sourceOpacity < 0.1) {
+                c2 = base;
+            } else {
+                c2 = (c * (1. + (base.x-0.8) / length(c)) * mask) + base*(1.-mask);
+            }
+            gl_FragColor = vec4(c2.x, c2.y, c2.z, 1);
+          }
+          else
+          {
+             gl_FragColor = vec4(base.x, base.y, base.z, 1);
+          }
+        }
+    </script>
+    <script id="vertexShaderWebgl" type="x-shader/x-vertex">
+        precision mediump float;
+
+        attribute vec2 a_position;
+        attribute vec2 a_texCoord;
+        varying vec2 v_texCoord;
+
+        void main()
+        {
+          gl_Position = vec4(a_position, 0, 1);
+          v_texCoord = a_texCoord;
+        }
+    </script>
 </head>
 
 <body>
