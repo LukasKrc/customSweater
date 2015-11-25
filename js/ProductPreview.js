@@ -33,6 +33,7 @@ function ProductPreview(canvasId, patternCanvasId, productImageSrc, patternImage
     var patternImageWidth, patternImageHeight;
     var patternSize = patternSizeParam;
     var pattern;
+	var displacementMapId = 1;
 
     this.setDraw3d = function(draw3dParam)
     {
@@ -53,6 +54,24 @@ function ProductPreview(canvasId, patternCanvasId, productImageSrc, patternImage
         draw(0, 0);
         if (draw3d)
             render();
+    }
+	
+	this.setDisplacement = function(displacementID)
+	{
+		displacementMapId = displacementID;
+	}
+	
+	this.setImage = function(ImageID)
+    {
+		productImage = new Image();
+        productImage.src = ImageID;
+		//displacementMapId = displacementID;
+        draw(0, 0);
+        if (draw3d){
+			change3d();
+			//init3d();
+            //render();
+		}
     }
 
     this.setOriginalSizePatternImage = function(originalSizePatternImageParam)
@@ -111,7 +130,7 @@ function ProductPreview(canvasId, patternCanvasId, productImageSrc, patternImage
     var draw = function()
     {
         makePattern();
-        render2D()
+        render2D();
         if (draw3d)
             render3D();
     }
@@ -227,6 +246,40 @@ function ProductPreview(canvasId, patternCanvasId, productImageSrc, patternImage
     $("#3dContainer").mousemove(handleMouseMove);
     $("#3dContainer").mouseup(handleMouseUp);
     $("#3dContainer").mouseout(handleMouseOut);
+	
+	function change3d(){
+		scene = new THREE.Scene();
+		scene.add(camera);
+		
+		//renderer.setClearColor( 0xEEEEEE, 1);
+		//document.getElementById("3dContainer").appendChild(renderer.domElement);
+		
+		var DiffuseTexture = new THREE.Texture(canvas);
+        var DisplacementTexture = new THREE.ImageUtils.loadTexture("imgs/DisplaceMap/DMap" + displacementMapId + ".jpg", {}, render);
+        var shader = THREE.ShaderLib["normalmap"];
+        var fragShader = document.getElementById("fragmentShader").innerHTML;
+
+        var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
+        uniforms["enableDisplacement"].value = true;
+        uniforms["enableDiffuse"].value = true;
+        uniforms["tDisplacement"].value = DisplacementTexture;
+        uniforms["tDiffuse"].value = DiffuseTexture;
+        uniforms["uDisplacementScale"].value = 1;
+        var parameters = {
+            fragmentShader: fragShader/*shader.fragmentShader*/,
+            vertexShader: shader.vertexShader,
+            uniforms: uniforms,
+            lights: true
+        };
+        var NormalMaterial = new THREE.ShaderMaterial(parameters);
+		
+		var geometry = new THREE.PlaneGeometry(16, 16, 256, 256);
+        geometry.computeTangents();
+
+        plane = new THREE.Mesh(geometry, NormalMaterial  /*material*/);
+		
+		scene.add(plane);
+	}
 
     function init3d() {
         scene = new THREE.Scene();
@@ -244,7 +297,7 @@ function ProductPreview(canvasId, patternCanvasId, productImageSrc, patternImage
         document.getElementById("3dContainer").appendChild(renderer.domElement);
 
         var DiffuseTexture = new THREE.Texture(canvas);
-        var DisplacementTexture = new THREE.ImageUtils.loadTexture("imgs/DisplacementMap.jpg", {}, render);
+        var DisplacementTexture = new THREE.ImageUtils.loadTexture("imgs/DisplaceMap/DMap" + displacementMapId + ".jpg", {}, render);
         var shader = THREE.ShaderLib["normalmap"];
         var fragShader = document.getElementById("fragmentShader").innerHTML;
 
