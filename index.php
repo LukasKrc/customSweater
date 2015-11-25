@@ -113,6 +113,8 @@
                 ?>
             </ul>
         </div>
+		
+		
         <div id="coloursContainer">
             <div class="optionHeader">Spalvos</div>
             <div id="colours"></div>
@@ -122,6 +124,26 @@
             <canvas id="canvas" width=600 height=600></canvas>
             <div id="3dContainer" width=600 height=600></div>
        </div>
+	   
+	   <div id="clothesContainer">
+        <div class="optionHeader">Drabužiai</div>
+		 <div id="clothes">
+            <ul id="clothesList">
+                <?php
+                    $dir = new DirectoryIterator(dirname(__DIR__ . '/imgs/clothes/*'));
+                        $i = 0;
+                        foreach ($dir as $fileinfo) {
+                            if (!$fileinfo->isDot() && $fileinfo->isFile()) {
+                                echo "<li clotheNumber='$i' class=\"clothesButton\" style=\"background-image: url('imgs/clothes/clothe$i.png')\"></li>\n";
+                                $i++;
+                            }
+                        }
+                ?>
+            </ul>
+		 </div>
+        </div>
+	   
+	   
 </div>
 <canvas id="colourChangeCanvas" width=600 height=600></canvas>
 <canvas id="patternCanvas" width=1000 height=1000></canvas>
