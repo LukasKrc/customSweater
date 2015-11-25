@@ -4,15 +4,16 @@ $(document).ready(function() {
     var colourChanged = null;
     var patternImage = new Image();
     patternImage.src = "imgs/patterns/pattern0.png";
+    var imageID = 0;
 
     var colourChanger = null;
-    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/sweater.png", patternImage, 1, "webgl");
-    var mouseHandler = new MouseHandler(productPreview);
+    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/clothes/clothe"+ imageID +".png", patternImage, 1, true);
 
-    $(window).load(function() {
+    window.onload = function()
+    {
         colourChanger = new ColourChanger(productPreview);
         getColours(productPreview.getPatternImageId());
-    });
+    };
 
     function getColours(colourId) {
         $.ajax({
@@ -26,6 +27,14 @@ $(document).ready(function() {
             }
         });
     }
+
+    $(".clothesButton").click( function(e) {
+        var clothID = $(this).attr("clotheNumber");
+        console.log(clothID);
+        //	productPreview.setDisplacement(clothID);
+        //	productPreview.setImage("imgs/clothes/clothe"+ clothID +".png");
+
+    });
 
     $(".patternButton").click( function(e) {
         var buttonId = $(this).attr("buttonNumber");
@@ -170,31 +179,20 @@ function ColourChanger(productPreviewParam)
     {
         canvasReady = false;
         if(!originalPixels) return;
-        // Paima raðto atskirø detaliø spalvas.
         var newColours = colours[colourId];
 
         var index = 0;
-        // Eina per visus paveiksliuko pixelius
         for (var i = 0, l = originalPixels.data.length; i < l; i+= 4) {
-            // Paima pixelio spalvà
             var pixelColour = {R: originalPixels.data[i], G: originalPixels.data[i + 1], B: originalPixels.data[i + 2]};
-            // Suranda kurià spalvà reikia naudoti pagal originalaus paveiksliuko pixelio spalvà
             var colourIndex = getColourIndex(pixelColour);
             if (colourIndex >= newColours.length) {
-                // Pakeicia pixelio spalva, jeigu foldery nera tiek paveiksliuku su spalvom kokio indexo dabar reikia,
-                // tai imama pirma spalva ir didinamas indexas ir t.t. Jeigu neranda spalvos pagal ta indexa tai ima
-                // tas kurios yra is eiles visas.
                 currentPixels.data[i] = newColours[index].R;
                 currentPixels.data[i + 1] = newColours[index].G;
                 currentPixels.data[i + 2] = newColours[index].B;
                 index++;
-                // Jei jau priejo prie paskutines spalvos vel pradeda per nauja
                 if (index >= newColours.length) index = 0;
             } else {
-                // Tikrina ar pixelis nera visiskai permatomas, nes ner prasmes keist spalva jei nematomas pixelis
                 if (currentPixels.data[i + 3] > 0) {
-                    // Pakeicia spalva pixelio ir situo atveju foldery yra tiek spalvu, kiek reikia kad pakeist visu
-                    // rasto daliu spalvas.
                     currentPixels.data[i] = newColours[colourIndex].R;
                     currentPixels.data[i + 1] = newColours[colourIndex].G;
                     currentPixels.data[i + 2] = newColours[colourIndex].B;
