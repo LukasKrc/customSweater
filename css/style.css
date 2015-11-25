@@ -1,28 +1,47 @@
+* {
+    font-family: 'Corbel';
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 #container {
-    background-color: ivory;
-    height: 600px;
+    height: auto;
+    display: inline-block;
+    background-color : #EEEEEE;
 }
 
 #canvasContainer {
     float: left;
-    outline: solid thin;
 }
 
 #patterns {
-    margin-left: 50px;
-    outline: solid thin;
+    clear: both;
     float: left;
+    width: 100%;
 }
 
 #patternList {
     list-style-type: none;
     padding: 0;
+    margin: 0;
 }
 
 #size {
-    margin-left: 50px;
-    outline: solid thin;
     float: left;
+    width: 100%;
+}
+
+.optionHeader {
+    width: auto;
+    height: 40px;
+    padding: 5px 5px 5px 5px;
+    background-color: #515151;
+    font-size: 2em;
+    color: white;
 }
 
 #sizeList {
@@ -31,34 +50,86 @@
 }
 
 .patternButton {
-    width: 100px;
-    height: 100px;
-    outline: solid thin;
-    margin: 15px;
-    cursor: pointer;
-}
-
-.sizeButton {
     width: 50px;
     height: 50px;
-    outline: solid thin;
-    margin: 5px;
+    margin: 15px;
     cursor: pointer;
+    float: left;
+    background-color: white;
+    background-color: white;
+    border-radius: 30px;
+    border: solid #515151 5px;
+}
+
+#coloursContainer {
+    float: left;
+    clear: both;
+    width: 100%;
 }
 
 #colours {
-    margin-left: 50px;
-    outline: solid thin;
-    float: left;
+    width: 100%;
 }
 
 .colourButton {
-    width: 100px;
-    height: 100px;
+    width: 50px;
+    height: 50px;
     margin: 15px;
     cursor: pointer;
+    float: left;
+    background-color: white;
+    border-radius: 30px;
+    border: solid #515151 5px;
 }
 
 #colourChangeCanvas {
     display: none;
 }
+
+#patternCanvas {
+    float:left;
+}
+
+#size {
+    float: left;
+}
+
+#sizeList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sizeButton {
+    width: 50px;
+    height: 50px;
+    margin: 15px;
+    cursor: pointer;
+    float: left;
+    background-color: white;
+    border-radius: 30px;
+    border: solid #515151 5px;
+}
+
+#patternCanvas {
+    display: none;
+}
+
+#3dCanvas {
+    float: left;
+}
+
+#canvas {
+    float:left;
+    background-color: #EEEEEE;
+}
+
+#3dContainer {
+    float: left;
+}
+
+#optionsContainer {
+    float: left;
+    width: 270px;
+}
+

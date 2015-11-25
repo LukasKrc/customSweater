@@ -3,21 +3,16 @@ $(document).ready(function() {
 
     var colourChanged = null;
     var patternImage = new Image();
-	patternSize = 100;
     patternImage.src = "imgs/patterns/pattern0.png";
-	patternImage.width = patternSize;
-	patternImage.height = patternSize;
-	
-	var colourChanger = null;
-    var productPreview = new ProductPreview("canvas", "imgs/sweater.png", patternImage);
 
-	
-    window.onload = function()
-    {
+    var colourChanger = null;
+    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/sweater.png", patternImage, 1, "webgl");
+    var mouseHandler = new MouseHandler(productPreview);
+
+    $(window).load(function() {
         colourChanger = new ColourChanger(productPreview);
         getColours(productPreview.getPatternImageId());
-    };
-
+    });
 
     function getColours(colourId) {
         $.ajax({
@@ -38,58 +33,30 @@ $(document).ready(function() {
         if (buttonId != productPreview.getPatternImageId()) {
             var newImage = new Image();
             newImage.src = "imgs/patterns/pattern" + buttonId + ".png";
-			newImage.width = patternSize;
-			newImage.height = patternSize;
             productPreview.setOriginalPatternImage(newImage);
+            productPreview.setOriginalSizePatternImage(newImage);
             productPreview.setPatternImage(newImage);
-			productPreview.setPatternButtonID(newImage);
             getColours(productPreview.getPatternImageId());
             colourChanged = null;
         }
     });
-	
-	$(".sizeButton").click( function(e) {
+
+    $(".sizeButton").click( function(e) {
         var sizeID = $(this).attr("sizeNumber");
-		
-		if(sizeID == 0) {
-			patternSize = 50;
-			patternImage.width = 50;
-			patternImage.height = 50;
-		}
-		if(sizeID == 1) {
-			patternSize = 75;
-			patternImage.width = 75;
-			patternImage.height = 75;
-		}
-		if(sizeID == 2) {
-			patternSize = 100;
-			patternImage.width = 100;
-			patternImage.height = 100;
-		}
-		
-		
-		if (colourChanged == null){
-			var newImage = new Image();
-			var i = productPreview.getPatternButtonId();
-			console.log('i =' + i);
-			newImage.src = "imgs/patterns/pattern" + i + ".png";
-			newImage.width = patternSize;
-			newImage.height = patternSize;
-			productPreview.setOriginalPatternImage(newImage);
-			productPreview.setPatternImage(newImage);
-			getColours(i);
-		} 
-		else {
-			var newImage = new Image();
-			var i = productPreview.getPatternButtonId();
-			newImage.src = "imgs/patterns/pattern" + i + ".png";
-			newImage.width = patternSize;
-			newImage.height = patternSize;
-			productPreview.setOriginalPatternImage(newImage);
-			productPreview.setPatternImage(newImage);
-			colourChanger.changeImageColour(colourChanged);
-			getColours(i);
-		}
+
+        console.log(sizeID);
+        switch(sizeID) {
+            case '2':
+                productPreview.setPatternSize(1.5);
+                break;
+            case '1':
+                productPreview.setPatternSize(1.25);
+                break;
+            case '0':
+                productPreview.setPatternSize(1);
+                break;
+        }
+
     });
 
     $("#colours").on("click", "div", function (e)
@@ -147,12 +114,23 @@ function ColourChanger(productPreviewParam)
         canvas.width = patternImage.width;
         canvas.height =  patternImage.height;
         context.drawImage(
-            patternImage,0,0,patternImage.naturalWidth,patternImage.naturalHeight,0,0,
+            patternImage,
+            0,
+            0,
+            patternImage.naturalWidth,
+            patternImage.naturalHeight,
+            0,
+            0,
             patternImage.width,
             patternImage.height
         );
 
-        originalPixels = context.getImageData(0,0,patternImage.width,patternImage.height);
+        originalPixels = context.getImageData(
+            0,
+            0,
+            patternImage.width,
+            patternImage.height
+        );
 
         imageColours = [];
         for (var i = 0, l = originalPixels.data.length; i < l; i+= 4) {
@@ -192,20 +170,31 @@ function ColourChanger(productPreviewParam)
     {
         canvasReady = false;
         if(!originalPixels) return;
+        // Paima raðto atskirø detaliø spalvas.
         var newColours = colours[colourId];
 
         var index = 0;
+        // Eina per visus paveiksliuko pixelius
         for (var i = 0, l = originalPixels.data.length; i < l; i+= 4) {
+            // Paima pixelio spalvà
             var pixelColour = {R: originalPixels.data[i], G: originalPixels.data[i + 1], B: originalPixels.data[i + 2]};
+            // Suranda kurià spalvà reikia naudoti pagal originalaus paveiksliuko pixelio spalvà
             var colourIndex = getColourIndex(pixelColour);
             if (colourIndex >= newColours.length) {
+                // Pakeicia pixelio spalva, jeigu foldery nera tiek paveiksliuku su spalvom kokio indexo dabar reikia,
+                // tai imama pirma spalva ir didinamas indexas ir t.t. Jeigu neranda spalvos pagal ta indexa tai ima
+                // tas kurios yra is eiles visas.
                 currentPixels.data[i] = newColours[index].R;
                 currentPixels.data[i + 1] = newColours[index].G;
                 currentPixels.data[i + 2] = newColours[index].B;
                 index++;
+                // Jei jau priejo prie paskutines spalvos vel pradeda per nauja
                 if (index >= newColours.length) index = 0;
             } else {
+                // Tikrina ar pixelis nera visiskai permatomas, nes ner prasmes keist spalva jei nematomas pixelis
                 if (currentPixels.data[i + 3] > 0) {
+                    // Pakeicia spalva pixelio ir situo atveju foldery yra tiek spalvu, kiek reikia kad pakeist visu
+                    // rasto daliu spalvas.
                     currentPixels.data[i] = newColours[colourIndex].R;
                     currentPixels.data[i + 1] = newColours[colourIndex].G;
                     currentPixels.data[i + 2] = newColours[colourIndex].B;
@@ -224,6 +213,7 @@ function ColourChanger(productPreviewParam)
         var newImage = new Image();
         newImage.src = colourURL;
         productPreview.setPatternImage(newImage);
+        productPreview.setOriginalSizePatternImage(newImage);
     }
 
 
@@ -246,4 +236,3 @@ function ColourChanger(productPreviewParam)
         }
     }
 }
-
