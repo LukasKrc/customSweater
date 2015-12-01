@@ -6,8 +6,12 @@ $(document).ready(function() {
     patternImage.src = "imgs/patterns/pattern0.png";
     var imageID = 0;
 
+    // Divas ekrano uzdengimui kraunant
+    var loadingDiv = document.createElement("div");
+    loadingDiv.id = "loadingCover";
+
     var colourChanger = null;
-    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/sweater.png", patternImage, 1, "webgl");
+    var productPreview = new ProductPreview("canvas", "patternCanvas", "imgs/renderPictures/0/model.png", patternImage, 1, "webgl");
     var mouseHandler = new MouseHandler(productPreview);
 
     window.onload = function()
@@ -29,8 +33,32 @@ $(document).ready(function() {
         });
     }
 
+    // Defaultine uzsakymo reiksme
+    $("#orderButton").attr("clotheNumber", 0);
+
+    // Uzsakymo funkcija
+    $("#orderButton").click( function(e) {
+        var garmentId = $(this).attr("clotheNumber");
+        var canvas = document.createElement('canvas');
+        var uvMap = new Image();
+        uvMap.onload = function() {
+            canvas.setAttribute('width', uvMap.width);
+            canvas.setAttribute('height', uvMap.height);
+            $("#container").append(canvas);
+            var context = canvas.getContext("2d");
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(uvMap,0,0);
+            context.globalCompositeOperation="source-atop";
+            var patternCanvas = document.getElementById("patternCanvas");
+            context.drawImage(patternCanvas, 0, 0, canvas.width, canvas.height);
+        }
+        uvMap.src = "imgs/renderPictures/uvMaps/uv" + garmentId + ".png";
+    });
+
     $(".clothesButton").click( function(e) {
+        $("#container").append(loadingDiv);
         var clothID = $(this).attr("clotheNumber");
+        $("#orderButton").attr("clotheNumber", clothID);
         console.log(clothID);
         var modelImage = new Image();
         var maskImage = new Image();
@@ -39,6 +67,7 @@ $(document).ready(function() {
             maskImage.onload = function() {
                 uvImage.onload = function() {
                     productPreview.setWebglResource(uvImage, modelImage, maskImage);
+                    $("#loadingCover").remove();
                 }
                 uvImage.src = "imgs/renderPictures/"+ clothID +"/uv.png";
                 //productPreview.setDisplacement(displacementImage);

@@ -12,10 +12,12 @@ html, body {
     height: auto;
     display: inline-block;
     background-color : #EEEEEE;
+    position: relative;
 }
 
 #canvasContainer {
     float: left;
+    height: 555px;
 }
 
 #clothes {
@@ -175,4 +177,27 @@ html, body {
 
 #clothesList {
     padding-left: 20px;
+}
+
+#loadingCover {
+    position: absolute;
+    background-color: gray;
+    opacity: 0.5;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#orderButton {
+    text-decoration: none;
+    width: 380px;
+    clear: right;
+    float: right;
+    margin-top: 5px;
+}
+
+#orderButton:hover {
+    background-color: #2d2d2d;
+    cursor: pointer;
 }

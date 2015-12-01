@@ -122,7 +122,7 @@
     </div>
        <div id="canvasContainer">
             <canvas id="canvas" width=600 height=600></canvas>
-            <div id="3dContainer" width=600 height=600></div>
+            <div id="3dContainer"></div>
        </div>
 	   
 	   <div id="clothesContainer">
@@ -141,6 +141,7 @@
                 ?>
             </ul>
 		 </div>
+        <a class="optionHeader" id="orderButton">Užsakyti</a>
         </div>
 	   
 	   
