@@ -236,10 +236,9 @@ function ProductPreview(canvasId, patternCanvasId, productImageSrc, patternImage
     var source = new Image();
     var mask = new Image();
 
-    var derp = "derp";
 
     var canvasRenderer = new CanvasRenderer(canvas, patternCanvas);
-    var webglRenderer = new WebglRenderer(interp, source, model, mask, patternCanvas);
+    var webglRenderer = new WebglRenderer(interp, model, mask, patternCanvas);
     var threeJsRenderer = new ThreeJsRenderer(canvas, patternCanvas);
     var patternMaker = new PaternMaker(patternCanvas);
 
@@ -251,21 +250,37 @@ function ProductPreview(canvasId, patternCanvasId, productImageSrc, patternImage
             canvas.width = productImage.width;
             canvas.height = productImage.height;
             interp.onload = function() {
-                source.onload = function() {
-                    model.onload = function() {
-                        mask.onload = function() {
-                            self.setDrawType(drawTypeParam);
-                            draw();
-                        }
-                        mask.src = "mask.png";
+                model.onload = function() {
+                    mask.onload = function() {
+                        self.setDrawType(drawTypeParam);
+                        draw();
                     }
-                    model.src = "model1.jpg"
+                    mask.src = "imgs/renderPictures/0/mask.png";
                 }
-                source.src = "uv.png";
+                model.src = "imgs/renderPictures/0/model.png"
             }
-            interp.src = "dasd.png";
+            interp.src = "imgs/renderPictures/0/uv.png";
         }
         productImage.src = productImageSrc;
+    }
+
+    // Nereikalingos nes nenaudosim threejs.
+
+    this.setDisplacement = function(displacementImage) {
+        threeJsRenderer.setDisplacementImage(displacementImage);
+    }
+
+    this.setImage = function(productImageParam) {
+        canvasRenderer.setProductImage(productImageParam);
+        draw();
+    }
+
+    // Drabuzio pakeitimas
+    this.setWebglResource = function(uv, model, mask) {
+        webglRenderer.setUv(uv);
+        webglRenderer.setModel(model);
+        webglRenderer.setMask(mask);
+        draw();
     }
 }
 
@@ -293,7 +308,7 @@ function PaternMaker(patternCanvasParam) {
 
 }
 
-function WebglRenderer(interp, source, model, mask, patternCanvasParam) {
+function WebglRenderer(uv, model, mask, patternCanvasParam) {
 
     var self = this;
     var program;
@@ -302,6 +317,18 @@ function WebglRenderer(interp, source, model, mask, patternCanvasParam) {
     var gl;
     var patternCanvas = patternCanvasParam;
     var canvas;
+
+    this.setUv = function(uv) {
+        uploadGlTexture(gl.TEXTURE0, uv);
+    }
+
+    this.setModel = function(model) {
+        uploadGlTexture(gl.TEXTURE1, model);
+    }
+
+    this.setMask = function(mask) {
+        uploadGlTexture(gl.TEXTURE3, mask);
+    }
 
     this.setVisibility = function(visible) {
         if (visible) {
@@ -344,6 +371,7 @@ function WebglRenderer(interp, source, model, mask, patternCanvasParam) {
         canvas = document.createElement('canvas');
         canvas.setAttribute('width', 500);
         canvas.setAttribute('height', 555);
+        canvas.setAttribute('background-color', '#EEEEEE');
 
         $("#3dContainer").append(canvas);
 
@@ -358,9 +386,9 @@ function WebglRenderer(interp, source, model, mask, patternCanvasParam) {
         setupGlTexture(gl.TEXTURE1, modelTexture);
         setupGlTexture(gl.TEXTURE2, sourceTexture);
         setupGlTexture(gl.TEXTURE3, maskTexture);
-        uploadGlTexture(gl.TEXTURE0, interp);
+        uploadGlTexture(gl.TEXTURE0, uv);
         uploadGlTexture(gl.TEXTURE1, model);
-        uploadGlTexture(gl.TEXTURE2, source);
+        uploadGlTexture(gl.TEXTURE2, patternCanvas);
         uploadGlTexture(gl.TEXTURE3, mask);
 
         var vertexShader = gl.createShader(gl.VERTEX_SHADER);
@@ -434,7 +462,7 @@ function WebglRenderer(interp, source, model, mask, patternCanvasParam) {
 
 }
 
-function CanvasRenderer(canvasParam, patternCanvasParam, derp) {
+function CanvasRenderer(canvasParam, patternCanvasParam) {
 
     var self = this;
 
@@ -453,6 +481,8 @@ function CanvasRenderer(canvasParam, patternCanvasParam, derp) {
     }
 
     this.setProductImage = function(productImageParam) {
+        canvas.width = productImageParam.width;
+        canvas.height = productImageParam.height;
         productImage = productImageParam;
     }
 
@@ -483,6 +513,13 @@ function ThreeJsRenderer(canvasParam, patternCanvasParam) {
     var animationID;
     var keepRendering = true;
     var productImage;
+    var displacementImage;
+
+    this.setDisplacementImage = function(displacementImageParam) {
+        displacementImage.src = displacementImageParam.src;
+        displacementImage.onload = self.render();
+        console.log(displacementImage.src);
+    }
 
     this.setProductImage = function(productImageParam) {
         productImage = productImageParam;
@@ -512,34 +549,42 @@ function ThreeJsRenderer(canvasParam, patternCanvasParam) {
         renderCanvas = renderer.domElement;
         document.getElementById("3dContainer").appendChild(renderCanvas);
 
-        var DiffuseTexture = new THREE.Texture(canvas);
-        var DisplacementTexture = new THREE.ImageUtils.loadTexture("imgs/DisplacementMap.jpg", {}, self.render);
-        var shader = THREE.ShaderLib["normalmap"];
-        var fragShader = document.getElementById("fragmentShader").innerHTML;
+        displacementImage = new Image();
+        displacementImage.src = "imgs/DisplacementMap.jpg";
 
-        var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
-        uniforms["enableDisplacement"].value = true;
-        uniforms["enableDiffuse"].value = true;
-        uniforms["tDisplacement"].value = DisplacementTexture;
-        uniforms["tDiffuse"].value = DiffuseTexture;
-        uniforms["uDisplacementScale"].value = 1;
-        var parameters = {
-            fragmentShader: fragShader/*shader.fragmentShader*/,
-            vertexShader: shader.vertexShader,
-            uniforms: uniforms,
-            lights: true
-        };
+        displacementImage.onload = function() {
 
-        var NormalMaterial = new THREE.ShaderMaterial(parameters);
-        var geometry = new THREE.PlaneGeometry(16, 16, 256, 256);
-        geometry.computeTangents();
+            var DiffuseTexture = new THREE.Texture(canvas);
+            var DisplacementTexture = new THREE.Texture(displacementImage);//THREE.ImageUtils.loadTexture("imgs/DisplacementMap.jpg", {}, self.render);
+            var shader = THREE.ShaderLib["normalmap"];
+            var fragShader = document.getElementById("fragmentShader").innerHTML;
 
-        plane = new THREE.Mesh(geometry, NormalMaterial  /*material*/);
-        scene.add(plane);
+            var uniforms = THREE.UniformsUtils.clone(shader.uniforms);
+            uniforms["enableDisplacement"].value = true;
+            uniforms["enableDiffuse"].value = true;
+            uniforms["tDisplacement"].value = DisplacementTexture;
+            uniforms["tDiffuse"].value = DiffuseTexture;
+            uniforms["uDisplacementScale"].value = 1;
+            var parameters = {
+                fragmentShader: fragShader/*shader.fragmentShader*/,
+                vertexShader: shader.vertexShader,
+                uniforms: uniforms,
+                lights: true
+            };
+
+            var NormalMaterial = new THREE.ShaderMaterial(parameters);
+            var geometry = new THREE.PlaneGeometry(16, 16, 256, 256);
+            geometry.computeTangents();
+
+            plane = new THREE.Mesh(geometry, NormalMaterial  /*material*/);
+            scene.add(plane);
+            self.render();
+        }
     }
 
     this.render = function() {
         plane.material.uniforms.tDiffuse.value.needsUpdate = true;
+        plane.material.uniforms.tDisplacement.value.needsUpdate = true;
         renderer.render(scene, camera);
     }
 }

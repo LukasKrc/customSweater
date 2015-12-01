@@ -44,21 +44,21 @@
           vec3 c = texture2D(u_source, txy).xyz;
           float sourceOpacity = texture2D(u_source, txy).a;
           float mask = texture2D(u_mask, v_texCoord).x;
-          vec3 base = texture2D(u_model, v_texCoord).xyz;
+          vec4 base = texture2D(u_model, v_texCoord).xyzw;
 
           if (mask > 0.5)
           {
             vec3 c2;
             if (sourceOpacity < 0.1) {
-                c2 = base;
+                c2 = base.xyz;
             } else {
-                c2 = (c * (1. + (base.x-0.8) / length(c)) * mask) + base*(1.-mask);
+                c2 = (c * (1. + (base.x-0.8) / length(c)) * mask) + base.xyz*(1.-mask);
             }
             gl_FragColor = vec4(c2.x, c2.y, c2.z, 1);
           }
           else
           {
-             gl_FragColor = vec4(base.x, base.y, base.z, 1);
+             gl_FragColor = vec4(base.x, base.y, base.z, base.w);
           }
         }
     </script>
