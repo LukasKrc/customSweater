@@ -44,13 +44,22 @@ $(document).ready(function() {
         uvMap.onload = function() {
             canvas.setAttribute('width', uvMap.width);
             canvas.setAttribute('height', uvMap.height);
-            $("#container").append(canvas);
+            //$("#container").append(canvas);
             var context = canvas.getContext("2d");
             context.clearRect(0, 0, canvas.width, canvas.height);
             context.drawImage(uvMap,0,0);
             context.globalCompositeOperation="source-atop";
             var patternCanvas = document.getElementById("patternCanvas");
             context.drawImage(patternCanvas, 0, 0, canvas.width, canvas.height);
+            var Pic = canvas.toDataURL("image/png");
+            console.log(Pic);
+            $.ajax({
+                type: 'POST',
+                url: 'upload.php',
+                data: {
+                    img: Pic
+                }
+            });
         }
         uvMap.src = "imgs/renderPictures/uvMaps/uv" + garmentId + ".png";
     });
